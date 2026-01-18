@@ -21,6 +21,7 @@ const GamePage = ({ onReturn }) => {
   const [isGameComplete, setIsGameComplete] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState(null);
   const [showLeaderboard, setShowLeaderboard] = useState(true);
+  const [pairCount, setPairCount] = useState(8);
 
   // Initialize game
   useEffect(() => {
@@ -28,7 +29,7 @@ const GamePage = ({ onReturn }) => {
   }, []);
 
   const initializeGame = () => {
-    const initialCards = generateGameCards();
+    const initialCards = generateGameCards(pairCount);
     setCards(initialCards);
     setFlippedCards([]);
     setMoves(0);
@@ -116,6 +117,22 @@ const GamePage = ({ onReturn }) => {
     handleResetGame();
   };
 
+  const changeCardCount = (count) => {
+    if (count >= 8 && count <= 32) {
+      setPairCount(count);
+      // We need to re-initialize immediately when count changes
+      // But we can't call initializeGame directly because pairCount state update is async
+      // So we pass the new count explicitly
+      const initialCards = generateGameCards(count);
+      setCards(initialCards);
+      setFlippedCards([]);
+      setMoves(0);
+      setIsGameComplete(false);
+      setCurrentPlayer(0);
+      setPlayers(players.map(p => ({ ...p, score: 0 })));
+    }
+  };
+
   const matchesFound = cards.filter(card => card.isMatched).length / 2;
 
   return (
@@ -140,6 +157,33 @@ const GamePage = ({ onReturn }) => {
           {showLeaderboard ? 'Hide' : 'Show'} Sidebar
         </button>
       </div>
+
+      {/* Card Count Selection (Only visible at start or reset) */}
+      {moves === 0 && !isGameComplete && (
+        <div className="flex justify-center mb-6">
+          <div className="bg-gray-800 p-4 rounded-lg flex items-center space-x-4">
+            <span className="text-gray-300 font-medium">Card Pairs:</span>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => changeCardCount(pairCount - 1)}
+                disabled={pairCount <= 8}
+                className="w-8 h-8 flex items-center justify-center bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed rounded text-white font-bold transition-colors"
+              >
+                -
+              </button>
+              <span className="text-xl font-bold text-blue-400 w-8 text-center">{pairCount}</span>
+              <button
+                onClick={() => changeCardCount(pairCount + 1)}
+                disabled={pairCount >= 32}
+                className="w-8 h-8 flex items-center justify-center bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed rounded text-white font-bold transition-colors"
+              >
+                +
+              </button>
+            </div>
+            <span className="text-gray-500 text-sm">({pairCount * 2} cards)</span>
+          </div>
+        </div>
+      )}
 
       {/* Main Game Area */}
       <div className="grid lg:grid-cols-3 gap-6">
@@ -167,7 +211,7 @@ const GamePage = ({ onReturn }) => {
               currentPlayer={currentPlayer}
               onEditPlayer={handleEditPlayer}
             />
-            
+
             <Leaderboard currentPlayers={players} />
           </div>
         )}

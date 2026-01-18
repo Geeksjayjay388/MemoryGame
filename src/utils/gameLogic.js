@@ -1,9 +1,10 @@
 import { ICON_COMPONENTS, ICON_COLORS } from './icons';
 
 // Generate pairs of icons with colors
-export const generateCards = () => {
-  const icons = [...ICON_COMPONENTS.slice(0, 8), ...ICON_COMPONENTS.slice(0, 8)];
-  const colors = [...ICON_COLORS.slice(0, 8), ...ICON_COLORS.slice(0, 8)];
+// Generate pairs of icons with colors
+export const generateCards = (pairCount = 8) => {
+  const icons = [...ICON_COMPONENTS.slice(0, pairCount), ...ICON_COMPONENTS.slice(0, pairCount)];
+  const colors = [...ICON_COLORS.slice(0, pairCount), ...ICON_COLORS.slice(0, pairCount)];
 
   return icons.map((Icon, index) => ({
     id: index,
@@ -11,13 +12,13 @@ export const generateCards = () => {
     color: colors[index],
     isFlipped: false,
     isMatched: false,
-    pairId: index % 8 // Identical icons at index and index + 8 will have same pairId
+    pairId: index % pairCount // Identical icons at index and index + pairCount will have same pairId
   })).sort(() => Math.random() - 0.5);
 };
 
 // Generate initial cards for the game
-export const generateGameCards = () => {
-  return generateCards();
+export const generateGameCards = (pairCount = 8) => {
+  return generateCards(pairCount);
 };
 
 // Shuffle function
